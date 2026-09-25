@@ -1,4 +1,5 @@
 from functools import lru_cache
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,10 +29,17 @@ class Settings(BaseSettings):
     def validate_live(self) -> None:
         if self.use_fakes:
             return
-        required = (self.database_url, self.redis_url, self.salesforce_mirror_url,
-                    self.salesforce_contract_table, self.salesforce_bp_field,
-                    self.salesforce_ca_field, self.salesforce_mobile_field,
-                    self.salesforce_email_field, self.otp_provider_credentials)
+        required = (
+            self.database_url,
+            self.redis_url,
+            self.salesforce_mirror_url,
+            self.salesforce_contract_table,
+            self.salesforce_bp_field,
+            self.salesforce_ca_field,
+            self.salesforce_mobile_field,
+            self.salesforce_email_field,
+            self.otp_provider_credentials,
+        )
         if not all(required):
             raise RuntimeError("Required production registration settings are missing")
 
