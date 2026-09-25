@@ -1,0 +1,1 @@
+"""MGL Connect registration service."""
