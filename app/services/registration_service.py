@@ -69,16 +69,12 @@ class RegistrationService:
             raise RegistrationError() from exc
         if not validated:
             raise RegistrationError()
-        # Revalidate on completion; only opaque IDs and destination data are persisted pre-verification.
-        try:
-            provider_reference = await self.otp.send(data.mobile_number)
-        except Exception as exc:
-            raise RegistrationError() from exc
+        # Persist a durable idempotency key before delivery so an OTP can always be reconciled.
         request = OtpRequest(
             purpose="REGISTER",
             destination_hash=self._destination_hash(data.mobile_number),
-            provider_reference=provider_reference,
-            status="PENDING",
+            provider_reference="",
+            status="DISPATCHING",
             attempt_count=0,
             resend_count=0,
             expires_at=datetime.now(timezone.utc)
@@ -87,6 +83,15 @@ class RegistrationService:
         self.db.add(request)
         await self.db.commit()
         await self.db.refresh(request)
+        try:
+            provider_reference = await self.otp.send(data.mobile_number, str(request.otp_request_id))
+        except Exception as exc:
+            request.status = "FAILED"
+            await self.db.commit()
+            raise RegistrationError() from exc
+        request.provider_reference = provider_reference
+        request.status = "PENDING"
+        await self.db.commit()
         return request.otp_request_id
 
     async def verify(self, data: OtpVerification, client_key: str) -> None:
@@ -176,7 +181,7 @@ class RegistrationService:
             await self.db.rollback()
             raise RegistrationError()
         try:
-            reference = await self.otp.send(data.mobile_number)
+            reference = await self.otp.send(data.mobile_number, str(request.otp_request_id))
         except Exception as exc:
             await self.db.rollback()
             raise RegistrationError() from exc

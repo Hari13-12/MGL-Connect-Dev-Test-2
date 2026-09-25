@@ -9,5 +9,7 @@ argon2-cffi
 pydantic
 pydantic-settings
 email-validator
+httpx
+redis
 gunicorn
 uvicorn-worker

@@ -4,19 +4,31 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
+from app.database.base import AsyncSessionLocal
+from app.core.config import settings
+from redis.asyncio import Redis
 from app.services.registration_ports import (
-    InMemoryRateLimitPort,
+    HttpOtpPort,
     OtpPort,
     RateLimitPort,
+    RedisRateLimitPort,
+    SalesforceMirrorPort,
     SalesforceValidationPort,
-    UnavailableOtpPort,
-    UnavailableSalesforcePort,
 )
 from app.services.registration_service import RegistrationService
 
-_salesforce: SalesforceValidationPort = UnavailableSalesforcePort()
-_otp: OtpPort = UnavailableOtpPort()
-_limiter: RateLimitPort = InMemoryRateLimitPort()
+_salesforce: SalesforceValidationPort = SalesforceMirrorPort(
+    AsyncSessionLocal, settings.SALESFORCE_MIRROR_VALIDATION_QUERY
+)
+_otp: OtpPort = HttpOtpPort(
+    settings.OTP_PROVIDER_BASE_URL,
+    settings.OTP_PROVIDER_TOKEN,
+    settings.OTP_PROVIDER_SEND_PATH,
+    settings.OTP_PROVIDER_VERIFY_PATH,
+)
+_limiter: RateLimitPort = RedisRateLimitPort(
+    Redis.from_url(settings.RATE_LIMIT_REDIS_URL, decode_responses=True)
+)
 
 
 def get_salesforce_port() -> SalesforceValidationPort:
