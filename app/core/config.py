@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     APP_VERSION: str = Field(default="1.0.0", description="Application version")
     VERSION: str = Field(default="1.0.0", description="API version")
     DEBUG: bool = Field(default=False, description="Debug mode")
+    PASSWORD_MIN_LENGTH: int = 12
+    OTP_EXPIRY_SECONDS: int = 300
+    OTP_MAX_ATTEMPTS: int = 5
+    OTP_MAX_RESENDS: int = 3
+    OTP_DESTINATION_RATE_LIMIT: int = 5
+    OTP_IP_RATE_LIMIT: int = 20
+    OTP_RATE_WINDOW_SECONDS: int = 3600
    
 
     model_config = {

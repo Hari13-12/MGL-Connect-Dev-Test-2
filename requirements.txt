@@ -3,7 +3,11 @@ fastapi[standard]
 uvicorn[standard]
 sqlalchemy
 asyncpg
+psycopg[binary]
+alembic
+argon2-cffi
 pydantic
 pydantic-settings
+email-validator
 gunicorn
 uvicorn-worker
