@@ -10,7 +10,10 @@ _hasher = PasswordHasher()
 def validate_password(password: str) -> None:
     if len(password) < settings.PASSWORD_MIN_LENGTH:
         raise ValueError("Password does not meet security requirements")
-    if not all(re.search(pattern, password) for pattern in (r"[a-z]", r"[A-Z]", r"\d", r"[^\w\s]")):
+    if not all(
+        re.search(pattern, password)
+        for pattern in (r"[a-z]", r"[A-Z]", r"\d", r"[^\w\s]")
+    ):
         raise ValueError("Password does not meet security requirements")
 
 

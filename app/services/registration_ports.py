@@ -9,7 +9,9 @@ class ValidatedAccess:
 
 
 class SalesforceValidationPort(Protocol):
-    async def validate_customer(self, bp_number: str, ca_number: str, mobile_number: str, email: str) -> list[ValidatedAccess]: ...
+    async def validate_customer(
+        self, bp_number: str, ca_number: str, mobile_number: str, email: str
+    ) -> list[ValidatedAccess]: ...
 
 
 class OtpPort(Protocol):
@@ -22,7 +24,9 @@ class RateLimitPort(Protocol):
 
 
 class UnavailableSalesforcePort:
-    async def validate_customer(self, bp_number: str, ca_number: str, mobile_number: str, email: str) -> list[ValidatedAccess]:
+    async def validate_customer(
+        self, bp_number: str, ca_number: str, mobile_number: str, email: str
+    ) -> list[ValidatedAccess]:
         raise RuntimeError("Salesforce validation is not configured")
 
 
@@ -36,6 +40,7 @@ class UnavailableOtpPort:
 
 class InMemoryRateLimitPort:
     """Safe process-local fallback; production should inject a shared rate-limit backend."""
+
     def __init__(self) -> None:
         self._counts: dict[str, int] = {}
 
