@@ -1,0 +1,2 @@
+[validation]
+command = ".pipeline/venv/bin/python -c \"from app.main import app; print(app.title)\""
