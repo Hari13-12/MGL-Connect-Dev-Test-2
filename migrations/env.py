@@ -11,7 +11,7 @@ target_metadata = Base.metadata
 
 def get_database_url() -> str:
     """Resolve a non-production migration URL without reading a .env file."""
-    url = os.environ.get("ALEMBIC_DATABASE_URL") or os.environ.get("DATABASE_URL")
+    url = os.environ.get("ALEMBIC_DATABASE_URL")
     if not url:
         url = config.get_main_option("sqlalchemy.url")
     # The application uses asyncpg while Alembic requires a synchronous driver.
