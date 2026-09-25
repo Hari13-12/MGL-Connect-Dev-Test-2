@@ -19,7 +19,7 @@ cleanup() {
 trap cleanup EXIT
 
 "$postgres_bin/initdb" -D "$database_dir" --auth=trust --username="$database_user" >/dev/null
-"$postgres_bin/pg_ctl" -D "$database_dir" -o "-h 127.0.0.1 -p $database_port" -w start >/dev/null
+"$postgres_bin/pg_ctl" -D "$database_dir" -o "-h 127.0.0.1 -p $database_port -k $database_dir" -w start >/dev/null
 "$postgres_bin/createdb" -h 127.0.0.1 -p "$database_port" "$database_name"
 
 export ALEMBIC_DATABASE_URL="postgresql+psycopg://${database_user}@127.0.0.1:${database_port}/${database_name}"
