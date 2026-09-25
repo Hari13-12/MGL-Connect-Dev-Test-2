@@ -16,7 +16,7 @@ async def session():
     async with async_sessionmaker(engine,expire_on_commit=False)() as value: yield value
     await engine.dispose()
 
-def registration(): return RegisterIn(bp_number="BP-1",ca_number="CA-1",mobile_number="+15555550100",email="customer@example.test",password="Secure-Pass1!")
+def registration(): return RegisterIn(bp_number="BP-1",ca_number="CA-1",mobile_number="+15555550100",email="customer@example.com",password="Secure-Pass1!")
 
 @pytest.mark.asyncio
 async def test_valid_registration_creates_only_validated_access(session):

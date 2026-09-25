@@ -11,7 +11,7 @@ class CustomerScope:
     account_sfid: str
 
 class FakeSalesforceAdapter:
-    def __init__(self, records=None): self.records = records or [{"bp":"BP-1","ca":"CA-1","mobile":"+15555550100","email":"customer@example.test","service_contract_sfid":"SC-1","account_sfid":"AC-1"}]
+    def __init__(self, records=None): self.records = records or [{"bp":"BP-1","ca":"CA-1","mobile":"+15555550100","email":"customer@example.com","service_contract_sfid":"SC-1","account_sfid":"AC-1"}]
     async def validate(self, bp, ca, mobile, email):
         for row in self.records:
             if (row["bp"],row["ca"],row["mobile"],row["email"].lower()) == (bp,ca,mobile,email.lower()):
