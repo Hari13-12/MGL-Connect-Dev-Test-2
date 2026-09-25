@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from app.models.registration import OtpRequest
 from app.schemas.registration import OtpVerification, RegistrationStart
@@ -41,6 +42,12 @@ class FakeSession:
         for value in self.added:
             if getattr(value, "user_id", None) is None:
                 value.user_id = uuid4()
+
+
+class FailingCommitSession(FakeSession):
+    async def commit(self):
+        self.commits += 1
+        raise IntegrityError("INSERT", {}, OSError("database unavailable"))
 
 
 class FakeSalesforce:
@@ -182,6 +189,26 @@ async def test_invalid_otp_increments_attempt_without_creating_user():
 
 
 @pytest.mark.asyncio
+async def test_user_access_and_otp_changes_roll_back_together_on_database_failure():
+    request = OtpRequest(
+        otp_request_id=uuid4(), purpose="REGISTER", destination_hash=RegistrationService._destination_hash("+15551234567"),
+        provider_reference="ref", status="PENDING", attempt_count=0, resend_count=0,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=1),
+    )
+    db = FailingCommitSession([request, None])
+    service = RegistrationService(db, FakeSalesforce(), FakeOtp(), AllowAll())
+    verification = OtpVerification(
+        otp_request_id=request.otp_request_id, bp_number="BP1", ca_number="CA1", mobile_number="15551234567",
+        email="customer@example.com", password="Valid-password1!", otp="123456",
+    )
+
+    with pytest.raises(RegistrationError):
+        await service.verify(verification, "client")
+
+    assert db.rollbacks == 1
+
+
+@pytest.mark.asyncio
 async def test_redis_rate_limit_uses_expiring_shared_buckets(monkeypatch):
     monkeypatch.setattr("app.services.registration_ports.time.time", lambda: 3600)
     redis = FakeRedis()
@@ -191,6 +218,8 @@ async def test_redis_rate_limit_uses_expiring_shared_buckets(monkeypatch):
     assert await limiter.allow("destination", 2, 60)
     assert not await limiter.allow("destination", 2, 60)
     assert redis.expiries["destination:60"] == 60
+    monkeypatch.setattr("app.services.registration_ports.time.time", lambda: 3660)
+    assert await limiter.allow("destination", 2, 60)
 
 
 @pytest.mark.asyncio
