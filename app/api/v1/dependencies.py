@@ -1,12 +1,12 @@
 from typing import Annotated
 
 from fastapi import Depends
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.session import get_db
-from app.database.base import AsyncSessionLocal
 from app.core.config import settings
-from redis.asyncio import Redis
+from app.database.base import AsyncSessionLocal
+from app.database.session import get_db
 from app.services.registration_ports import (
     HttpOtpPort,
     OtpPort,

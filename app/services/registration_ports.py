@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from typing import Any, Protocol
 
@@ -103,7 +104,7 @@ class HttpOtpPort:
         response.raise_for_status()
         body = response.json()
         if not isinstance(body, dict):
-            raise RuntimeError("OTP provider returned an invalid response")
+            raise TypeError("OTP provider returned an invalid response")
         return body
 
 
@@ -116,7 +117,7 @@ class RedisRateLimitPort:
     async def allow(self, key: str, limit: int, window_seconds: int) -> bool:
         if limit < 1 or window_seconds < 1:
             return False
-        bucket = f"{key}:{int(__import__('time').time() // window_seconds)}"
+        bucket = f"{key}:{int(time.time() // window_seconds)}"
         count = await self._redis.incr(bucket)
         if count == 1:
             await self._redis.expire(bucket, window_seconds)
