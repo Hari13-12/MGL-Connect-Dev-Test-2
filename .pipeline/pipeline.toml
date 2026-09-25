@@ -1,2 +1,2 @@
 [validation]
-command = ".pipeline/venv/bin/python -c \"from app.main import app; print(app.title)\""
+command = "DATABASE_USER=pipeline DATABASE_PASSWORD=pipeline DATABASE_NAME=pipeline .pipeline/venv/bin/python -c \"from app.main import app; print(app.title)\""
