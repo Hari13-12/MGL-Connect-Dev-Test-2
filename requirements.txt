@@ -1,0 +1,9 @@
+# FastAPI and ASGI server
+fastapi[standard]
+uvicorn[standard]
+sqlalchemy
+asyncpg
+pydantic
+pydantic-settings
+gunicorn
+uvicorn-worker
