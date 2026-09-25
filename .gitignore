@@ -153,3 +153,5 @@ uv.lock
 # Logs
 logs/
 *.log
+
+.sf/
