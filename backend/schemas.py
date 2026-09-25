@@ -1,5 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
-import re
+from pydantic import BaseModel, EmailStr, Field
 class RegisterIn(BaseModel):
     bp_number: str=Field(min_length=1,max_length=64)
     ca_number: str=Field(min_length=1,max_length=64)
