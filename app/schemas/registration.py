@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
@@ -79,3 +80,23 @@ class OtpDispatched(BaseModel):
 
 class RegistrationComplete(BaseModel):
     status: str = "REGISTRATION_COMPLETE"
+
+
+class LoginRequest(BaseModel):
+    bp_number: str = Field(min_length=1, max_length=64)
+    ca_number: str = Field(min_length=1, max_length=64)
+    password: str = Field(min_length=1, max_length=256)
+
+    @field_validator("bp_number", "ca_number")
+    @classmethod
+    def normalize_identifier(cls, value: str) -> str:
+        return value.strip().upper()
+
+
+class LoginSuccess(BaseModel):
+    session_id: UUID
+    access_token: str
+    refresh_token: str
+    access_expires_at: datetime
+    refresh_expires_at: datetime
+    token_type: str = "Bearer"
