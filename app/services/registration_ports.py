@@ -20,6 +20,12 @@ class SalesforceValidationPort(Protocol):
     ) -> list[ValidatedAccess]: ...
 
 
+class SalesforceAccessValidationPort(Protocol):
+    async def validate_access(
+        self, bp_number: str, ca_number: str
+    ) -> list[ValidatedAccess]: ...
+
+
 class OtpPort(Protocol):
     async def send(self, destination: str, idempotency_key: str) -> str: ...
     async def verify(self, provider_reference: str, otp: str) -> bool: ...
@@ -50,6 +56,24 @@ class SalesforceMirrorPort:
                     "mobile_number": mobile_number,
                     "email": email,
                 },
+            )
+            return [
+                ValidatedAccess(
+                    service_contract_sfid=row.service_contract_sfid,
+                    account_sfid=row.account_sfid,
+                )
+                for row in result.mappings()
+            ]
+
+    async def validate_access(
+        self, bp_number: str, ca_number: str
+    ) -> list[ValidatedAccess]:
+        if not self._validation_query:
+            raise RuntimeError("Salesforce mirror validation query is not configured")
+        async with self._session_factory() as session:
+            result = await session.execute(
+                text(self._validation_query),
+                {"bp_number": bp_number, "ca_number": ca_number},
             )
             return [
                 ValidatedAccess(

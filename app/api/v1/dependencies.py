@@ -12,13 +12,18 @@ from app.services.registration_ports import (
     OtpPort,
     RateLimitPort,
     RedisRateLimitPort,
+    SalesforceAccessValidationPort,
     SalesforceMirrorPort,
     SalesforceValidationPort,
 )
+from app.services.login_service import LoginService
 from app.services.registration_service import RegistrationService
 
 _salesforce: SalesforceValidationPort = SalesforceMirrorPort(
     AsyncSessionLocal, settings.SALESFORCE_MIRROR_VALIDATION_QUERY
+)
+_login_salesforce: SalesforceAccessValidationPort = SalesforceMirrorPort(
+    AsyncSessionLocal, settings.SALESFORCE_LOGIN_VALIDATION_QUERY
 )
 _otp: OtpPort = HttpOtpPort(
     settings.OTP_PROVIDER_BASE_URL,
@@ -33,6 +38,10 @@ _limiter: RateLimitPort = RedisRateLimitPort(
 
 def get_salesforce_port() -> SalesforceValidationPort:
     return _salesforce
+
+
+def get_login_salesforce_port() -> SalesforceAccessValidationPort:
+    return _login_salesforce
 
 
 def get_otp_port() -> OtpPort:
@@ -50,3 +59,13 @@ def get_registration_service(
     limiter: Annotated[RateLimitPort, Depends(get_rate_limit_port)],
 ) -> RegistrationService:
     return RegistrationService(db, salesforce, otp, limiter)
+
+
+def get_login_service(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    salesforce: Annotated[
+        SalesforceAccessValidationPort, Depends(get_login_salesforce_port)
+    ],
+    limiter: Annotated[RateLimitPort, Depends(get_rate_limit_port)],
+) -> LoginService:
+    return LoginService(db, salesforce, limiter)

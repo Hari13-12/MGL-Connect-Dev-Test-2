@@ -22,11 +22,23 @@ class Settings(BaseSettings):
     OTP_DESTINATION_RATE_LIMIT: int = 5
     OTP_IP_RATE_LIMIT: int = 20
     OTP_RATE_WINDOW_SECONDS: int = 3600
+    LOGIN_PRINCIPAL_RATE_LIMIT: int = 10
+    LOGIN_IP_RATE_LIMIT: int = 50
+    LOGIN_RATE_WINDOW_SECONDS: int = 900
+    ACCESS_TOKEN_EXPIRY_SECONDS: int = 900
+    REFRESH_TOKEN_EXPIRY_SECONDS: int = 2592000
     SALESFORCE_MIRROR_VALIDATION_QUERY: str = Field(
         default="",
         description=(
             "Parameterized Heroku Connect query returning service_contract_sfid and "
             "account_sfid; it receives bp_number, ca_number, mobile_number, and email."
+        ),
+    )
+    SALESFORCE_LOGIN_VALIDATION_QUERY: str = Field(
+        default="",
+        description=(
+            "Parameterized Heroku Connect query returning service_contract_sfid and "
+            "account_sfid for a BP/CA pair; it receives bp_number and ca_number."
         ),
     )
     OTP_PROVIDER_BASE_URL: str = ""
