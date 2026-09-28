@@ -1,9 +1,15 @@
 # FastAPI and ASGI server
 fastapi[standard]
 uvicorn[standard]
-sqlalchemy
+sqlalchemy[asyncio]
 asyncpg
+psycopg[binary]
+alembic
+argon2-cffi
 pydantic
 pydantic-settings
+email-validator
+httpx
+redis
 gunicorn
 uvicorn-worker

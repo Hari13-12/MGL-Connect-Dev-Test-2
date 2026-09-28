@@ -9,7 +9,8 @@ from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.exceptions import validation_exception_handler
 from app.core.logging import configure_logging
-from app.database.base import Base, async_engine, check_database_connection
+from app.database.base import async_engine, check_database_connection
+import app.models  # noqa: F401 - ensure ORM metadata is registered for migrations
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -21,9 +22,6 @@ async def lifespan(app: FastAPI):
     try:
         await check_database_connection()
         logger.info("Database connection successful!")
-        async with async_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables created successfully!")
     except Exception as e:
         logger.error("Startup failed: %s", str(e), exc_info=True)
         raise
