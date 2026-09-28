@@ -17,6 +17,7 @@ from app.services.registration_ports import (
     SalesforceValidationPort,
 )
 from app.services.login_service import LoginService
+from app.services.forgot_password_service import ForgotPasswordService
 from app.services.registration_service import RegistrationService
 
 _salesforce: SalesforceValidationPort = SalesforceMirrorPort(
@@ -69,3 +70,14 @@ def get_login_service(
     limiter: Annotated[RateLimitPort, Depends(get_rate_limit_port)],
 ) -> LoginService:
     return LoginService(db, salesforce, limiter)
+
+
+def get_forgot_password_service(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    salesforce: Annotated[
+        SalesforceAccessValidationPort, Depends(get_login_salesforce_port)
+    ],
+    otp: Annotated[OtpPort, Depends(get_otp_port)],
+    limiter: Annotated[RateLimitPort, Depends(get_rate_limit_port)],
+) -> ForgotPasswordService:
+    return ForgotPasswordService(db, salesforce, otp, limiter)
