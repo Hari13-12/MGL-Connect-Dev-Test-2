@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 def normalize_mobile(value: str) -> str:
@@ -100,3 +100,43 @@ class LoginSuccess(BaseModel):
     access_expires_at: datetime
     refresh_expires_at: datetime
     token_type: str = "Bearer"
+
+
+class ForgotPasswordStart(BaseModel):
+    bp_number: str | None = Field(default=None, min_length=1, max_length=64)
+    ca_number: str | None = Field(default=None, min_length=1, max_length=64)
+    mobile_number: str | None = None
+
+    @field_validator("bp_number", "ca_number")
+    @classmethod
+    def normalize_optional_identifier(cls, value: str | None) -> str | None:
+        return value.strip().upper() if value else value
+
+    @field_validator("mobile_number")
+    @classmethod
+    def normalize_optional_mobile(cls, value: str | None) -> str | None:
+        return normalize_mobile(value) if value else value
+
+    @model_validator(mode="after")
+    def require_one_identifier(self):
+        has_mobile = self.mobile_number is not None
+        has_bp_ca = self.bp_number is not None and self.ca_number is not None
+        has_partial_bp_ca = (self.bp_number is None) != (self.ca_number is None)
+        if has_partial_bp_ca or has_mobile == has_bp_ca:
+            raise ValueError("provide either mobile_number or both bp_number and ca_number")
+        return self
+
+
+class ForgotPasswordVerification(BaseModel):
+    otp_request_id: UUID
+    otp: str = Field(min_length=4, max_length=16)
+    new_password: str = Field(min_length=1, max_length=256)
+
+
+class ForgotPasswordOtpDispatched(BaseModel):
+    otp_request_id: UUID
+    status: str = "If the account is eligible, an OTP has been sent."
+
+
+class PasswordResetComplete(BaseModel):
+    status: str = "PASSWORD_UPDATED"
